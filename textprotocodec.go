@@ -47,6 +47,7 @@ func (c *TextProtoCodec) Marshal(v any) ([]byte, error) {
 	}
 
 	return parser.FormatWithConfig(data, parser.Config{
+		ExpandAllChildren:        true,
 		SkipAllColons:            true,
 		WrapStringsAfterNewlines: true,
 	})

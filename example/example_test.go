@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hansmi/aurum"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -47,4 +48,23 @@ func TestProtoMessage(t *testing.T) {
 		Dir: "./testdata",
 	}
 	g.Assert(t, "proto", timestamppb.New(time.Date(2000, time.January, 1, 3, 2, 1, 0, time.UTC)))
+}
+
+func TestTextProto(t *testing.T) {
+	g := aurum.Golden{
+		Dir:   "./testdata",
+		Codec: &aurum.TextProtoCodec{},
+	}
+
+	g.Assert(t, "struct.textproto", func() *structpb.Struct {
+		s, err := structpb.NewStruct(map[string]any{
+			"hello":  true,
+			"world":  "text",
+			"number": 123,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}())
 }
