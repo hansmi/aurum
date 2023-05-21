@@ -14,7 +14,7 @@ import (
 	"go.uber.org/multierr"
 )
 
-type LogFunc func(string, ...any)
+type logFunc func(string, ...any)
 
 // TB is the subset of [testing.TB] used for golden tests.
 type TB interface {
@@ -114,7 +114,7 @@ func (o *Golden) readGolden(path string, t reflect.Type) (any, error) {
 	return value, err
 }
 
-func (o Golden) assert(name string, value any, logf LogFunc) error {
+func (o Golden) assert(name string, value any, logf logFunc) error {
 	o.applyDefaults()
 
 	if err := validation.CheckValueType(value); err != nil {
