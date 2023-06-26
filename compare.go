@@ -21,7 +21,7 @@ type Comparer interface {
 
 // Cmp compares values using [cmp.Diff].
 type Cmp struct {
-	// Options for comparing values, e.g. [cmp.EqualEmpty]. If one of the
+	// Options for comparing values, e.g. [cmpopts.EqualEmpty]. If one of the
 	// compared values is a [proto.Message] then the [protocmp.Transform]
 	// option is automatically added.
 	Options cmp.Options
