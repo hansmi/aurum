@@ -1,6 +1,10 @@
 package example_test
 
 import (
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
 	"sort"
 	"testing"
 	"time"
@@ -67,4 +71,25 @@ func TestTextProto(t *testing.T) {
 		}
 		return s
 	}())
+}
+
+func httpHandler(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "<html><body>Hello World!</body></html>\n")
+}
+
+func TestHTTPHandler(t *testing.T) {
+	recorder := httptest.NewRecorder()
+
+	req, err := http.NewRequest("GET", "/example", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	httpHandler(recorder, req)
+
+	g := aurum.Golden{
+		Dir:   "./testdata",
+		Codec: &aurum.TextCodec{},
+	}
+	g.Assert(t, "http_handler_body", recorder.Body.String())
 }
