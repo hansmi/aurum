@@ -49,6 +49,7 @@ go test -update_golden_files
 
 ## Alternatives
 
+* [github.com/sebdah/goldie/v2](https://pkg.go.dev/github.com/sebdah/goldie/v2)
 * [github.com/xorcare/golden](https://pkg.go.dev/github.com/xorcare/golden)
 * [gotest.tools/v3/golden](https://pkg.go.dev/gotest.tools/v3/golden)
 
