@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+
+	"github.com/hansmi/aurum/internal/codecutil"
 )
 
 // TextCodec stores values in plain-text files. Supports strings, byte slices,
@@ -17,11 +19,16 @@ type TextCodec struct {
 var _ Codec = (*TextCodec)(nil)
 
 func (t TextCodec) Marshal(v any) ([]byte, error) {
-	if v, ok := v.(encoding.TextMarshaler); ok {
-		return v.MarshalText()
+	rv, _, err := codecutil.PrepareMarshalValue(v)
+	if err != nil {
+		return nil, err
 	}
 
-	if v := reflect.Indirect(reflect.ValueOf(v)).Interface(); v != nil {
+	if tm, ok := rv.Interface().(encoding.TextMarshaler); ok {
+		return tm.MarshalText()
+	}
+
+	if v := rv.Elem().Interface(); v != nil {
 		switch v := v.(type) {
 		case []byte:
 			return v, nil
@@ -40,18 +47,25 @@ func (t TextCodec) Marshal(v any) ([]byte, error) {
 }
 
 func (t TextCodec) Unmarshal(data []byte, v any) error {
-	switch v := v.(type) {
-	case *[]byte:
-		*v = append([]byte(nil), data...)
-		return nil
-	case *string:
-		*v = string(data)
-		return nil
-	case *[]rune:
-		*v = []rune(string(data))
-		return nil
-	case encoding.TextUnmarshaler:
-		return v.UnmarshalText(data)
+	rv, m, err := codecutil.PrepareUnmarshalDest(v)
+	if err != nil {
+		return err
+	}
+
+	if m == nil {
+		switch v := reflect.Indirect(rv).Interface().(type) {
+		case *[]byte:
+			*v = append([]byte(nil), data...)
+			return nil
+		case *string:
+			*v = string(data)
+			return nil
+		case *[]rune:
+			*v = []rune(string(data))
+			return nil
+		case encoding.TextUnmarshaler:
+			return v.UnmarshalText(data)
+		}
 	}
 
 	if t.Fallback == nil {

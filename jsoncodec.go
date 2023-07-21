@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/hansmi/aurum/internal/validation"
+	"github.com/hansmi/aurum/internal/codecutil"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 )
 
 // JSONCodec stores values using the JSON format.
@@ -22,17 +21,17 @@ type JSONCodec struct {
 var _ Codec = (*JSONCodec)(nil)
 
 func (c *JSONCodec) Marshal(v any) ([]byte, error) {
-	if err := validation.CheckValueType(v); err != nil {
+	rv, m, err := codecutil.PrepareMarshalValue(v)
+	if err != nil {
 		return nil, err
 	}
 
-	var err error
 	var data []byte
 
-	if m, ok := v.(proto.Message); ok {
+	if m != nil {
 		data, err = c.ProtoMarshalOptions.Marshal(m)
 	} else {
-		data, err = json.Marshal(v)
+		data, err = json.Marshal(rv.Interface())
 	}
 
 	if err != nil {
@@ -54,13 +53,14 @@ func (c *JSONCodec) Marshal(v any) ([]byte, error) {
 }
 
 func (c *JSONCodec) Unmarshal(data []byte, v any) error {
-	if err := validation.CheckValueType(v); err != nil {
+	rv, m, err := codecutil.PrepareUnmarshalDest(v)
+	if err != nil {
 		return err
 	}
 
-	if m, ok := v.(proto.Message); ok {
+	if m != nil {
 		return c.ProtoUnmarshalOptions.Unmarshal(data, m)
 	}
 
-	return json.Unmarshal(data, v)
+	return json.Unmarshal(data, rv.Interface())
 }

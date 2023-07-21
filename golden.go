@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hansmi/aurum/internal/codecutil"
-	"github.com/hansmi/aurum/internal/validation"
 	"go.uber.org/multierr"
 )
 
@@ -117,7 +116,7 @@ func (o *Golden) readGolden(path string, t reflect.Type) (any, error) {
 func (o Golden) assert(name string, value any, logf logFunc) error {
 	o.applyDefaults()
 
-	if err := validation.CheckValueType(value); err != nil {
+	if err := codecutil.CheckValueType(value); err != nil {
 		return err
 	}
 

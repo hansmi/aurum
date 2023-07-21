@@ -227,3 +227,49 @@ func TestGoldenAssertFS(t *testing.T) {
 		t.Errorf("assert() returned %v, want %v", err, errUpdateNotSupported)
 	}
 }
+
+func TestGoldenAssertCustomStruct(t *testing.T) {
+	o := &Golden{
+		g:     &globalOptions{},
+		Codec: &JSONCodec{},
+		FS: fstest.MapFS{
+			"value": {
+				Data: []byte(`{ "name": "value" }`),
+			},
+			"ptr": {
+				Data: []byte(`{ "name": "ptr" }`),
+			},
+			"null": {
+				Data: []byte(`null`),
+			},
+		},
+	}
+
+	type s struct {
+		Name string `json:"name"`
+	}
+
+	for _, tc := range []struct {
+		name  string
+		value any
+	}{
+		{
+			name:  "value",
+			value: s{"value"},
+		},
+		{
+			name:  "ptr",
+			value: &s{"ptr"},
+		},
+		{
+			name:  "null",
+			value: (*s)(nil),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := o.assert(tc.name, tc.value, t.Logf); err != nil {
+				t.Errorf("assert() failed: %v", err)
+			}
+		})
+	}
+}
